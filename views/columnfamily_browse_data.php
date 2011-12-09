@@ -1,4 +1,7 @@
 <h3><a href="index.php"><?php echo $cluster_name; ?></a> &gt; <a href="describe_keyspace.php?keyspace_name=<?php echo $keyspace_name; ?>"><?php echo $keyspace_name; ?></a> &gt; <a href="describe_columnfamily.php?keyspace_name=<?php echo $keyspace_name; ?>&amp;columnfamily_name=<?php echo $columnfamily_name; ?>"><?php echo $columnfamily_name; ?></a> &gt; Browse Data</h3>
+<?php if (isset($success_message)) echo $success_message; ?>
+<?php if (isset($info_message)) echo $info_message; ?>
+<?php if (isset($error_message)) echo $error_message; ?>
 
 <?php if (!$is_counter_column): ?>
 <div id="menu">
@@ -24,7 +27,7 @@
 	<?php echo $results; ?>
 </table>
 
-<?php if ($show_begin_page_link): ?><a href="columnfamily_action.php?action=browse_data&amp;keyspace_name=<?php echo $keyspace_name; ?>&amp;columnfamily_name=<?php echo $columnfamily_name; ?>&amp;pos=begin&nb_rows=<?php echo $nb_rows; ?>">&lt;&lt; Begin</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<?php endif; ?>
-<?php if ($show_prev_page_link): ?><a href="columnfamily_action.php?action=browse_data&amp;keyspace_name=<?php echo $keyspace_name; ?>&amp;columnfamily_name=<?php echo $columnfamily_name; ?>&amp;offset_key=<?php echo $current_offset_key; ?>&amp;pos=prev&nb_rows=<?php echo $nb_rows; ?>">&lt; Prev Page</a><?php endif; ?>
-<?php if ($show_prev_page_link && $show_next_page_link): ?>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<?php endif; ?>
-<?php if ($show_next_page_link): ?><a href="columnfamily_action.php?action=browse_data&amp;keyspace_name=<?php echo $keyspace_name; ?>&amp;columnfamily_name=<?php echo $columnfamily_name; ?>&offset_key=<?php echo $offset_key; ?>&pos=next&nb_rows=<?php echo $nb_rows; ?>">Next Page &gt;</a><?php endif; ?>	
+<?php if (isset($show_begin_page_link)): ?><a href="columnfamily_action.php?action=browse_data&amp;keyspace_name=<?php echo $keyspace_name; ?>&amp;columnfamily_name=<?php echo $columnfamily_name; ?>&amp;pos=begin&nb_rows=<?php echo $nb_rows; ?>">&lt;&lt; Begin</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<?php endif; ?>
+<?php if (isset($show_prev_page_link)): ?><a href="columnfamily_action.php?action=browse_data&amp;keyspace_name=<?php echo $keyspace_name; ?>&amp;columnfamily_name=<?php echo $columnfamily_name; ?>&amp;offset_key=<?php echo $current_offset_key; ?>&amp;pos=prev&nb_rows=<?php echo $nb_rows; ?>">&lt; Prev Page</a><?php endif; ?>
+<?php if (isset($show_prev_page_link) && isset($show_next_page_link)): ?>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<?php endif; ?>
+<?php if (isset($show_next_page_link)): ?><a href="columnfamily_action.php?action=browse_data&amp;keyspace_name=<?php echo $keyspace_name; ?>&amp;columnfamily_name=<?php echo $columnfamily_name; ?>&offset_key=<?php echo $offset_key; ?>&pos=next&nb_rows=<?php echo $nb_rows; ?>">Next Page &gt;</a><?php endif; ?>	
