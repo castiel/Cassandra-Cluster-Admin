@@ -114,7 +114,7 @@
 	function displayErrorMessage($index,$params = array()) {
 		global $lang;
 	
-		return '<div class="error_message">'.getLang('form_error_'.$index,$params).'</div>';
+		return '<div class="error_message"><pre>'.getLang('form_error_'.$index,$params).'</pre></div>';
 	}
 	
 	$current_page_title = 'Cassandra Cluster Admin';
