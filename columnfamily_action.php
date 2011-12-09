@@ -5,7 +5,7 @@
 		@author Sébastien Giroux
 		@copyright All rights reserved - 2011
 	*/
-
+	require('include/fb.php');
 	require('include/kernel.inc.php');
 	require('include/verify_login.inc.php');
 	
@@ -69,6 +69,9 @@
 			$time_end = microtime(true);
 			
 			$vw_vars['success_message'] = displaySuccessMessage('edit_columnfamily',array('columnfamily_name' => $columnfamily_name,'query_time' => getQueryTime($time_start,$time_end)));
+		}
+		catch (MaxRetriesException $e) {
+			$vw_vars['error_message'] = displayErrorMessage('something_wrong_happened',array('message' => $e->getCassandraMessage()));
 		}
 		catch(Exception $e) {
 			$vw_vars['error_message'] = displayErrorMessage('edit_columnfamily',array('columnfamily_name' => $columnfamily_name,'message' => $e->getMessage()));
@@ -161,7 +164,7 @@
 		catch (Exception $e) {			
 			$included_header = true;
 			echo getHTML('header.php');
-			echo displayErrorMessage('drop_columnfamily',array('message' => $e->getMessage()));
+			$vw_vars['error_message'] = displayErrorMessage('drop_columnfamily',array('message' => $e->getMessage()));
 		}
 	}	
 		
@@ -190,6 +193,9 @@
 			$time_end = microtime(true);
 			
 			$vw_vars['success_message'] = displaySuccessMessage('create_secondary_index',array('column_name' => $column_name,'query_time' => getQueryTime($time_start,$time_end)));
+		}
+		catch (MaxRetriesException $e) {
+			$vw_vars['error_message'] = displayErrorMessage('something_wrong_happened',array('message' => $e->getCassandraMessage()));
 		}
 		catch (Exception $e) {
 			$vw_vars['error_message'] = displayErrorMessage('create_secondary_index',array('column_name' => $column_name,'message' => $e->getMessage()));
@@ -295,6 +301,9 @@
 		}
 		catch (cassandra_NotFoundException $e) {
 			$vw_vars['success_message'] = displayInfoMessage('get_key_doesnt_exists',array('key' => $tab_keys[0]));
+		}
+		catch (MaxRetriesException $e) {
+			$vw_vars['error_message'] = displayErrorMessage('something_wrong_happened',array('message' => $e->getCassandraMessage()));
 		}
 		catch (Exception $e) {
 			$vw_vars['error_message'] = displayErrorMessage('get_key',array('message' => $e->getMessage()));
@@ -531,6 +540,9 @@
 				$vw_vars['info_message'] = displayInfoMessage('insert_row_not_empty');
 			}
 		}
+		catch (MaxRetriesException $e) {
+			$vw_vars['error_message'] = displayErrorMessage('something_wrong_happened',array('message' => $e->getCassandraMessage()));
+		}
 		catch (Exception $e) {
 			$vw_vars['error_message'] = displayErrormessage('insert_row',array('message' => $e->getMessage()));
 		}
@@ -563,11 +575,10 @@
 		
 		$cf_def = ColumnFamilyHelper::getCFInKeyspace($keyspace_name,$columnfamily_name);
 		$vw_vars['is_super_cf'] = $cf_def->column_type == 'Super';
-		
+
 		$vw_vars['key'] = '';
 		$vw_vars['mode'] = 'insert';
 		$vw_vars['super_key'] = '';
-		
 		$current_page_title = 'Cassandra Cluster Admin > '.$keyspace_name.' > '.$columnfamily_name.' > Insert a Row';
 		
 		$included_header = true;
@@ -597,8 +608,11 @@
 			
 			redirect('describe_columnfamily.php?keyspace_name='.$keyspace_name.'&columnfamily_name='.$columnfamily_name);
 		}
+		catch (MaxRetriesException $e) {
+			$vw_vars['error_message'] = displayErrorMessage('something_wrong_happened',array('message' => $e->getCassandraMessage()));
+		}
 		catch(Exception $e) {
-			echo displayErrorMessage('something_wrong_happened',array('message' => $e->getMessage()));
+			$vw_vars['error_message'] = displayErrorMessage('something_wrong_happened',array('message' => $e->getMessage()));
 		}
 	}
 	
@@ -707,6 +721,7 @@
 			$result = $column_family->get_range($offset_key,'',$nb_rows);		
 			
 			$vw_vars['results'] = '';	
+			$vw_vars['is_counter_column'] = '';
 			$nb_results = 0;
 			
 			foreach ($result as $key => $value) {
@@ -742,16 +757,19 @@
 			
 			$vw_vars['is_counter_column'] = $vw_row_vars['is_counter_column'];
 			
-			$included_header = true;
-			echo getHTML('header.php');
-			echo getHTML('columnfamily_browse_data.php',$vw_vars);
 		}
 		catch (cassandra_NotFoundException $e) {
-			echo displayErrorMessage('columnfamily_doesnt_exists',array('column_name' => $columnfamily_name));
+			$vw_vars['error_message'] = displayErrorMessage('columnfamily_doesnt_exists',array('column_name' => $columnfamily_name));
+		}
+		catch (MaxRetriesException $e) {
+			$vw_vars['error_message'] = displayErrorMessage('something_wrong_happened',array('message' => $e->getCassandraMessage()));
 		}
 		catch (Exception $e) {
-			echo displayErrorMessage('something_wrong_happened',array('message' => $e->getMessage()));
+			$vw_vars['error_message'] = displayErrorMessage('something_wrong_happened',array('message' => $e->getMessage()));
 		}
+		$included_header = true;
+		echo getHTML('header.php');
+		echo getHTML('columnfamily_browse_data.php',$vw_vars);
 	}	
 	
 	/*
@@ -806,8 +824,11 @@
 			$output = $column_family->get($key);
 			$vw_vars['output'] = $output;
 		}
+		catch (MaxRetriesException $e) {
+			$vw_vars['error_message'] = displayErrorMessage('something_wrong_happened',array('message' => $e->getCassandraMessage()));
+		}
 		catch(Exception $e) {
-			echo displayErrorMessage('something_wrong_happened',array('message' => $e->getMessage()));
+			$vw_vars['error_message'] = displayErrorMessage('something_wrong_happened',array('message' => $e->getMessage()));
 		}
 		
 		$current_page_title = 'Cassandra Cluster Admin > '.$keyspace_name.' > '.$columnfamily_name.' > Edit Row';
@@ -854,12 +875,15 @@
 		catch (cassandra_NotFoundException $e) {
 			$included_header = true;
 			echo getHTML('header.php');
-			echo displayErrorMessage('columnfamily_doesnt_exists',array('column_name' => $columnfamily_name));
+			$vw_vars['error_message'] = displayErrorMessage('columnfamily_doesnt_exists',array('column_name' => $columnfamily_name));
+		}
+		catch (MaxRetriesException $e) {
+			$vw_vars['error_message'] = displayErrorMessage('something_wrong_happened',array('message' => $e->getCassandraMessage()));
 		}
 		catch (Exception $e) {
 			$included_header = true;
 			echo getHTML('header.php');
-			echo displayErrorMessage('something_wrong_happened',array('message' => $e->getMessage()));
+			$vw_vars['error_message'] = displayErrorMessage('something_wrong_happened',array('message' => $e->getMessage()));
 		}
 	}
 	
